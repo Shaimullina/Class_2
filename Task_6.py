@@ -1,16 +1,30 @@
-"""Задача 6: Декораторы классов и методов для логирования
+"""
+Задача 6: Декораторы классов и методов для логирования
 Создай систему логирования для методов класса, используя декораторы.
 Реализуй декоратор класса, который автоматически добавляет логирование ко всем
 публичным методам, и декораторы методов для различных уровней логирования
 (debug, info, warning, error).
-Создай класс Calculator с различными математическими операциями"""
+Создай класс Calculator с различными математическими операциями
+"""
 
 import functools
+import logging
 from datetime import datetime
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def log_method(level="info"):
+    """
+    Создается функция-декоратор, который принимает уровень логирования
+    """
+
     def decorator(func):
+        """
+        Внутри декоратора определяется "wrapper", он облрачивает вызываемую функцию
+        """
+
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -22,9 +36,9 @@ def log_method(level="info"):
                 msg = (
                     f"{timestamp} - {level.upper()}: Исключение в {func.__name__}: {e}"
                 )
+                logger.exception(msg)
                 raise
-            finally:
-                print(msg)
+
             return result
 
         return wrapper
@@ -32,12 +46,17 @@ def log_method(level="info"):
     return decorator
 
 
+"""
+декоратор "log_all_methods" перебирает атрибуты класса
+"""
+
+
 def log_all_methods(cls):
     for attr_name, attr_value in cls.__dict__.items():
         if callable(attr_value) and not attr_name.startswith("_"):
             decorated_method = log_method("info")(attr_value)
             setattr(cls, attr_name, decorated_method)
-        return cls
+    return cls
 
 
 @log_all_methods

@@ -1,9 +1,11 @@
-"""Задача 5: Система интернет-магазина с миксинами и композицией
+"""
+Задача 5: Система интернет-магазина с миксинами и композицией
 Создай систему интернет-магазина, используя миксины для добавления функциональности
 скидок и композицию для работы с корзиной.
 Каждый товар должен иметь название, цену, категорию. Реализуй миксины для различных типов скидок
 (процентная, фиксированная, по количеству).
-Корзина должна содержать товары и уметь рассчитывать общую стоимость с учетом скидок"""
+Корзина должна содержать товары и уметь рассчитывать общую стоимость с учетом скидок
+"""
 
 
 class Product:
@@ -41,7 +43,7 @@ class ShoppingCart:
     def __init__(self):
         self.items = []
 
-    def add_product(self, product, vs):
+    def add_product(self, product):
         self.items.append(product)
 
     def get_total(self):
@@ -56,11 +58,10 @@ class OnlineStore:
         self.products.append(product)
 
 
-# Пример использования
 product1 = DiscountedProduct("Ноутбук", 50000, "Электроника")
-product1.set_percent_discount(10)  # 10% скидка
+product1.set_percent_discount(10)
 product2 = DiscountedProduct("Мышь", 1000, "Электроника")
-product2.set_fixed_discount(100)  # скидка 100 рублей
+product2.set_fixed_discount(100)
 
 cart = ShoppingCart()
 cart.add_product(product1, 1)
