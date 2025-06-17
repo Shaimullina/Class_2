@@ -1,16 +1,18 @@
-"""
-Задача 8: Метаклассы и дескрипторы для валидации данных
+"""Задача 8: Метаклассы и дескрипторы для валидации данных
 Создай систему валидации данных, используя метаклассы и дескрипторы.
 Реализуй дескрипторы для различных типов валидации (email, телефон, возраст) и
 метакласс, который автоматически применяет валидацию к атрибутам класса на основе их аннотаций типов.
-Создай класс User с различными полями, требующими валидации
-"""
+Создай класс User с различными полями, требующими валидации"""
 
 import re
 from typing import get_type_hints
 
 
 class ValidatedDescriptor:
+    """
+    Валидация значений здесь происходит через заданный валидатор
+    """
+
     def __init__(self, validator=None):
         self.validator = validator
         self.name = None
@@ -29,6 +31,10 @@ class ValidatedDescriptor:
 
 
 class EmailValidator:
+    """
+    Валидатор эл. адресов
+    """
+
     email_regex = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 
     def __call__(self, value):
@@ -36,6 +42,10 @@ class EmailValidator:
 
 
 class PhoneValidator:
+    """
+    Валидатор мобильных номеров
+    """
+
     phone_regex = re.compile(r"^\+?\d[\d\-\s]{7,}\d$")
 
     def __call__(self, value):
@@ -43,34 +53,49 @@ class PhoneValidator:
 
 
 class AgeValidator:
+    """
+    Валедатор возраста
+    """
+
     def __call__(self, value):
         return isinstance(value, int) and (0 <= value <= 150)
 
 
+def select_validator(attr_name: str, attr_type: type):
+    """
+    Возвращает соответствующий валидатор по имени и типу атрибута.
+    """
+    if attr_type == str:
+        if "email" in attr_name.lower():
+            return EmailValidator()
+        if "phone" in attr_name.lower():
+            return PhoneValidator()
+    elif attr_type == int:
+        return AgeValidator()
+    return None
+
+
 class ValidationMeta(type):
+    """
+    Метокласс, который назначает дискрипторы валидации на основе анотации
+    """
+
     def __new__(mcs, name, bases, namespace):
         annotations = namespace.get("__annotations__", {})
         for attr_name, attr_type in annotations.items():
-            # В зависимости от типа, назначаем соответствующий дескриптор
-            if attr_type == str:
-                if "email" in attr_name.lower():
-                    validator = EmailValidator()
-                elif "phone" in attr_name.lower():
-                    validator = PhoneValidator()
-                else:
-                    validator = None  # для обычных строк без проверки
-            elif attr_type == int:
-                validator = AgeValidator()
-            else:
-                validator = None
+            validator = select_validator(attr_name, attr_type)
             namespace[attr_name] = ValidatedDescriptor(validator)
         return super().__new__(mcs, name, bases, namespace)
 
 
 class User(metaclass=ValidationMeta):
-    email: str  # будет автоматически валидироваться как email
-    phone: str  # будет автоматически валидироваться как телефон
-    age: int  # будет автоматически валидироваться как возраст
+    """
+    Класс пользователя
+    """
+
+    email: str
+    phone: str
+    age: int
 
     def __init__(self, email, phone, age, name):
         self.email = email
@@ -86,8 +111,6 @@ class User(metaclass=ValidationMeta):
 try:
     user1 = User("test@example.com", "+7-123-456-78-90", 25, "Иван")
     print(user1)
-
-    # Попытка создать пользователя с невалидными данными
     user2 = User("invalid-email", "123", -5, "Петр")
 except ValueError as e:
     print(f"Ошибка валидации: {e}")

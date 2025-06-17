@@ -1,28 +1,18 @@
-"""
-Задача 6: Декораторы классов и методов для логирования
+"""Задача 6: Декораторы классов и методов для логирования
 Создай систему логирования для методов класса, используя декораторы.
 Реализуй декоратор класса, который автоматически добавляет логирование ко всем
 публичным методам, и декораторы методов для различных уровней логирования
 (debug, info, warning, error).
-Создай класс Calculator с различными математическими операциями
-"""
+Создай класс Calculator с различными математическими операциями"""
 
 import functools
-import logging
 from datetime import datetime
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
-
-def log_method(level="info"):
-    """
-    Создается функция-декоратор, который принимает уровень логирования
-    """
-
+def log_method(level: str = "info"):
     def decorator(func):
         """
-        Внутри декоратора определяется "wrapper", он облрачивает вызываемую функцию
+        Декоратор для вызова метода
         """
 
         @functools.wraps(func)
@@ -36,9 +26,9 @@ def log_method(level="info"):
                 msg = (
                     f"{timestamp} - {level.upper()}: Исключение в {func.__name__}: {e}"
                 )
-                logger.exception(msg)
                 raise
-
+            finally:
+                print(msg)
             return result
 
         return wrapper
@@ -46,36 +36,38 @@ def log_method(level="info"):
     return decorator
 
 
-"""
-декоратор "log_all_methods" перебирает атрибуты класса
-"""
-
-
 def log_all_methods(cls):
+    """
+    Декоратор, который добавляет ко всем публичным методам логирование
+    """
     for attr_name, attr_value in cls.__dict__.items():
         if callable(attr_value) and not attr_name.startswith("_"):
             decorated_method = log_method("info")(attr_value)
             setattr(cls, attr_name, decorated_method)
-    return cls
+        return cls
 
 
 @log_all_methods
 class Calculator:
-    def __init__(self):
+    """
+    Калькулятор с методами для выполнения математических операций и логированием.
+    """
+
+    def __init__(self) -> None:
         pass
 
     @log_method("debug")
-    def add(self, a, b):
+    def addadd(self, a: float, b: float) -> float:
         return a + b
 
     @log_method("info")
-    def divide(self, a, b):
+    def divide(self, a: float, b: float) -> float:
         if b == 0:
             raise ValueError("Деление на ноль")
         return a / b
 
     @log_method("warning")
-    def power(self, base, exponent):
+    def power(self, base: float, exponent: float) -> float:
         return base**exponent
 
 
