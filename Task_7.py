@@ -8,6 +8,12 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
 
 class Observer(ABC):
     """
@@ -28,9 +34,6 @@ class Subject(ABC):
     """
 
     def __init__(self) -> None:
-        """
-        Инциализирует список наблюдателей
-        """
         self._observers = []
 
     def attach(self, observer) -> None:
@@ -39,6 +42,7 @@ class Subject(ABC):
         """
         if observer not in self._observers:
             self._observers.append(observer)
+            logging.info(f"Attached observer: {observer.__class__.__name__}")
 
     def detach(self, observer):
         """
@@ -46,6 +50,7 @@ class Subject(ABC):
         """
         if observer in self._observers:
             self._observers.remove(observer)
+            logging.info(f"Detached observer: {observer.__class__.__name__}")
 
     def notify(self, event):
         """
@@ -94,7 +99,7 @@ class EmailNotifier(Observer):
         self.email = email
 
     def update(self, event: Event) -> None:
-        print(f"[Email] To: {self.email} | New event: {event.title} - {event.content}")
+        logging.info(f"[Email] To: {self.email} | {event.title} - {event.content}")
 
 
 class SMSNotifier(Observer):
@@ -106,9 +111,7 @@ class SMSNotifier(Observer):
         self.phone_number = phone_number
 
     def update(self, event: Event) -> None:
-        print(
-            f"[SMS] To: {self.phone_number} | New event: {event.title} - {event.content}"
-        )
+        logging.info(f"[SMS] To: {self.phone_number} | {event.title} - {event.content}")
 
 
 class PushNotifier(Observer):
@@ -120,8 +123,8 @@ class PushNotifier(Observer):
         self.device_id = device_id
 
     def update(self, event):
-        print(
-            f"[Push] To Device: {self.device_id} | New event: {event.title} - {event.content}"
+        logging.info(
+            f"[Push] To Device: {self.device_id} | {event.title} - {event.content}"
         )
 
 
@@ -131,11 +134,10 @@ class NotificationCenter(Subject):
     """
 
     def publish_event(self, event: Event) -> None:
-        print(f"\n[NotificationCenter] Publishing event: {event.title}")
+        logging.info(f"[NotificationCenter] Publishing event: {event.title}")
         self.notify(event)
 
 
-# Пример использования
 notification_center = NotificationCenter()
 email_notifier = EmailNotifier("user@example.com")
 sms_notifier = SMSNotifier("+1234567890")

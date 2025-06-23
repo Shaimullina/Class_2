@@ -7,6 +7,13 @@
 
 import functools
 from datetime import datetime
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def log_method(level: str = "info"):
@@ -21,14 +28,12 @@ def log_method(level: str = "info"):
             result = None
             try:
                 result = func(self, *args, **kwargs)
-                msg = f"{timestamp} - {level.upper()}: Вызов {func.__name__} с args={args}, kwargs={kwargs} -> результат={result}"
+                message = f"Вызов {func.__name__} с args={args}, kwargs={kwargs} -> результат={result}"
+                getattr(logging, level.lower())(message)
             except Exception as e:
-                msg = (
-                    f"{timestamp} - {level.upper()}: Исключение в {func.__name__}: {e}"
-                )
+                message = f"Исключение в {func.__name__}: {e}"
+                logging.error(message)
                 raise
-            finally:
-                print(msg)
             return result
 
         return wrapper
@@ -44,7 +49,7 @@ def log_all_methods(cls):
         if callable(attr_value) and not attr_name.startswith("_"):
             decorated_method = log_method("info")(attr_value)
             setattr(cls, attr_name, decorated_method)
-        return cls
+    return cls
 
 
 @log_all_methods

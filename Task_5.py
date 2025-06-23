@@ -7,12 +7,16 @@
 
 
 class Product:
-    def __init__(self, name, price, category):
+    """
+    Представляет товар в интернет-магазине.
+    """
+
+    def __init__(self, name: str, price: float, category: str) -> None:
         self.name = name
         self.price = price
         self.category = category
 
-    def get_info(self):
+    def get_info(self) -> str:
         return f"{self.name}: {self.price} руб."
 
 
@@ -21,15 +25,19 @@ class Discount:
     Базовый интерфейс скидки.
     """
 
-    def apply(self, product, quantity=1):
+    def apply(self, product: Product, quantity: int = 1) -> float:
         return product.price
 
 
 class PercentDiscount(Discount):
-    def __init__(self, percent):
+    """
+    Скидка в процентах от цены товара.
+    """
+
+    def __init__(self, percent: float) -> None:
         self.percent = percent
 
-    def apply(self, product, quantity=1):
+    def apply(self, product: Product, quantity: int = 1) -> float:
         return product.price * (1 - self.percent / 100)
 
 
@@ -38,10 +46,10 @@ class FixedDiscount(Discount):
     Фиксированная скидка в рублях.
     """
 
-    def __init__(self, amount):
+    def __init__(self, amount: float) -> None:
         self.amount = amount
 
-    def apply(self, product, quantity=1):
+    def apply(self, product: Product, quantity: int = 1) -> float:
         return max(0, product.price - self.amount)
 
 
@@ -50,10 +58,10 @@ class QuantityDiscount(Discount):
     Скидка, зависящая от количества.
     """
 
-    def __init__(self, percent_per_extra):
+    def __init__(self, percent_per_extra: float) -> None:
         self.percent_per_extra = percent_per_extra
 
-    def apply(self, product, quantity=1):
+    def apply(self, product: Product, quantity: int = 1) -> float:
         if quantity <= 1:
             return product.price
         discount = self.percent_per_extra / 100 * (quantity - 1)
@@ -65,11 +73,11 @@ class DiscountedProduct:
     Объект товара с применяемой скидкой.
     """
 
-    def __init__(self, product, discount: Discount):
+    def __init__(self, product: Product, discount: Discount) -> None:
         self.product = product
         self.discount = discount
 
-    def get_price(self, quantity=1):
+    def get_price(self, quantity: int = 1) -> float:
         return self.discount.apply(self.product, quantity)
 
 
@@ -78,13 +86,13 @@ class ShoppingCart:
     Корзина покупателя
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.items = []
 
     def add_product(self, product, quantity=1):
         self.items.append((product, quantity))
 
-    def get_total(self):
+    def get_total(self) -> float:
         total = 0
         for product, quantity in self.items:
             if isinstance(product, DiscountedProduct):
@@ -94,7 +102,6 @@ class ShoppingCart:
         return total
 
 
-# Пример использования
 product1 = Product("Ноутбук", 50000, "Электроника")
 product1 = DiscountedProduct(product1, PercentDiscount(10))
 product2 = Product("Мышь", 1000, "Электроника")
