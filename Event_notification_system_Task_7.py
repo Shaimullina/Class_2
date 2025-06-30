@@ -7,6 +7,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 import logging
+from typing import List
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,7 +45,7 @@ class Subject(ABC):
             self._observers.append(observer)
             logging.info(f"Attached observer: {observer.__class__.__name__}")
 
-    def detach(self, observer):
+    def detach(self, observer: Observer) -> None:
         """
         Удаляет наблюжателя из подписчиков
         """
@@ -52,7 +53,7 @@ class Subject(ABC):
             self._observers.remove(observer)
             logging.info(f"Detached observer: {observer.__class__.__name__}")
 
-    def notify(self, event):
+    def notify(self, event: "Event") -> None:
         """
         Уведомляет всех наблюдателей о событии
         """
@@ -99,6 +100,9 @@ class EmailNotifier(Observer):
         self.email = email
 
     def update(self, event: Event) -> None:
+        """
+        Обрабатывает событие и отправляет email-уведомление.
+        """
         logging.info(f"[Email] To: {self.email} | {event.title} - {event.content}")
 
 
@@ -111,6 +115,9 @@ class SMSNotifier(Observer):
         self.phone_number = phone_number
 
     def update(self, event: Event) -> None:
+        """
+        Обрабатывает событие и отправляет SMS сообщение.
+        """
         logging.info(f"[SMS] To: {self.phone_number} | {event.title} - {event.content}")
 
 
@@ -122,7 +129,10 @@ class PushNotifier(Observer):
     def __init__(self, device_id: str) -> None:
         self.device_id = device_id
 
-    def update(self, event):
+    def update(self, event: Event) -> None:
+        """
+        Обрабатывает событие и отправляет push увед.
+        """
         logging.info(
             f"[Push] To Device: {self.device_id} | {event.title} - {event.content}"
         )

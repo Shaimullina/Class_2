@@ -8,6 +8,7 @@
 import functools
 from datetime import datetime
 import logging
+from typing import Callable, Any, Type
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -16,15 +17,14 @@ logging.basicConfig(
 )
 
 
-def log_method(level: str = "info"):
-    def decorator(func):
+def log_method(level: str = "info") -> Callable:
+    def decorator(func: Callable) -> Callable:
         """
         Декоратор для вызова метода
         """
 
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        def wrapper(self, *args: Any, **kwargs: Any) -> Any:
             result = None
             try:
                 result = func(self, *args, **kwargs)
@@ -41,7 +41,7 @@ def log_method(level: str = "info"):
     return decorator
 
 
-def log_all_methods(cls):
+def log_all_methods(cls: Type) -> Type:
     """
     Декоратор, который добавляет ко всем публичным методам логирование
     """
@@ -62,17 +62,26 @@ class Calculator:
         pass
 
     @log_method("debug")
-    def addadd(self, a: float, b: float) -> float:
+    def add(self, a: float, b: float) -> float:
+        """
+        Складывает два числа
+        """
         return a + b
 
     @log_method("info")
     def divide(self, a: float, b: float) -> float:
+        """
+        Выполняет депление одно числа на другое
+        """
         if b == 0:
             raise ValueError("Деление на ноль")
         return a / b
 
     @log_method("warning")
     def power(self, base: float, exponent: float) -> float:
+        """
+        Возводит число в степень
+        """
         return base**exponent
 
 

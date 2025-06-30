@@ -5,7 +5,7 @@
 Создай класс User с различными полями, требующими валидации"""
 
 import re
-from typing import get_type_hints
+from typing import Any, Optional, Type, Callable, get_type_hints
 
 
 class ValidatedDescriptor:
@@ -13,17 +13,26 @@ class ValidatedDescriptor:
     Валидация значений здесь происходит через заданный валидатор
     """
 
-    def __init__(self, validator=None):
+    def __init__(self, validator=None) -> None:
         self.validator = validator
         self.name = None
 
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: Type, name: str) -> None:
+        """
+        Обозначает имя атрибута при создании класса
+        """
         self.name = name
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype=None) -> Any:
+        """
+        Возвращает текущее значение атрибута
+        """
         return obj.__dict__.get(self.name)
 
-    def __set__(self, obj, value):
+    def __set__(self, obj: Any, value: Any) -> None:
+        """
+        Устанавливает значение и валидирует его
+        """
         if self.validator:
             if not self.validator(value):
                 raise ValueError(f"Некорректное значение для '{self.name}': {value}")
@@ -37,7 +46,10 @@ class EmailValidator:
 
     email_regex = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 
-    def __call__(self, value):
+    def __call__(self, value: Any) -> bool:
+        """
+        Осуществление проверки email
+        """
         return isinstance(value, str) and bool(self.email_regex.match(value))
 
 
@@ -48,16 +60,22 @@ class PhoneValidator:
 
     phone_regex = re.compile(r"^\+?\d[\d\-\s]{7,}\d$")
 
-    def __call__(self, value):
+    def __call__(self, value: Any) -> bool:
+        """
+        Проверка номера телефона
+        """
         return isinstance(value, str) and bool(self.phone_regex.match(value))
 
 
 class AgeValidator:
     """
-    Валедатор возраста
+    Валидатор возраста
     """
 
-    def __call__(self, value):
+    def __call__(self, value: Any) -> bool:
+        """
+        Проверка возраста
+        """
         return isinstance(value, int) and (0 <= value <= 150)
 
 
@@ -80,7 +98,7 @@ class ValidationMeta(type):
     Метокласс, который назначает дискрипторы валидации на основе анотации
     """
 
-    def __new__(mcs, name, bases, namespace):
+    def __new__(mcs, name: str, bases: tuple, namespace: dict) -> Type:
         annotations = namespace.get("__annotations__", {})
         for attr_name, attr_type in annotations.items():
             validator = select_validator(attr_name, attr_type)
@@ -97,13 +115,17 @@ class User(metaclass=ValidationMeta):
     phone: str
     age: int
 
-    def __init__(self, email, phone, age, name):
+    def __init__(self, email: str, phone: str, age: int, name: str) -> None:
         self.email = email
         self.phone = phone
         self.age = age
         self.name = name
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        возвращает строковое представление пользователя
+        """
+
         return f"User({self.name}, {self.email}, {self.phone}, {self.age})"
 
 

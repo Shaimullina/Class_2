@@ -17,6 +17,9 @@ class Product:
         self.category = category
 
     def get_info(self) -> str:
+        """
+        Возвращает строку с информацией о товаре.
+        """
         return f"{self.name}: {self.price} руб."
 
 
@@ -25,7 +28,10 @@ class Discount:
     Базовый интерфейс скидки.
     """
 
-    def apply(self, product: Product, quantity: int = 1) -> float:
+    def apply_discount(self, product: Product, quantity: int = 1) -> float:
+        """
+        Рассчитывает цену товара с учётом скидки.
+        """
         return product.price
 
 
@@ -38,6 +44,9 @@ class PercentDiscount(Discount):
         self.percent = percent
 
     def apply(self, product: Product, quantity: int = 1) -> float:
+        """
+        Применяет процентную скидку к товару.
+        """
         return product.price * (1 - self.percent / 100)
 
 
@@ -50,6 +59,9 @@ class FixedDiscount(Discount):
         self.amount = amount
 
     def apply(self, product: Product, quantity: int = 1) -> float:
+        """
+        Применяет фиксированную скидку к товару.
+        """
         return max(0, product.price - self.amount)
 
 
@@ -62,6 +74,9 @@ class QuantityDiscount(Discount):
         self.percent_per_extra = percent_per_extra
 
     def apply(self, product: Product, quantity: int = 1) -> float:
+        """
+        Применяет скидку в зависимости от количества.
+        """
         if quantity <= 1:
             return product.price
         discount = self.percent_per_extra / 100 * (quantity - 1)
@@ -78,6 +93,9 @@ class DiscountedProduct:
         self.discount = discount
 
     def get_price(self, quantity: int = 1) -> float:
+        """
+        Возвращает цену товара с учётом скидки.
+        """
         return self.discount.apply(self.product, quantity)
 
 
@@ -90,9 +108,15 @@ class ShoppingCart:
         self.items = []
 
     def add_product(self, product, quantity=1):
+        """
+        Добавляет товар в корзину.
+        """
         self.items.append((product, quantity))
 
     def get_total(self) -> float:
+        """
+        Вычисляет общую стоимость товаров в корзине с учетом скидок.
+        """
         total = 0
         for product, quantity in self.items:
             if isinstance(product, DiscountedProduct):
